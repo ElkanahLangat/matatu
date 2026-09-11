@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>matatu.com — Nairobi, Sorted</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#12141C; --paper:#F3EFE6; --magenta:#E63986; --lime:#C7D82C;
+    --indigo:#232853; --line:rgba(18,20,28,0.14); --white:#FFFFFF; --amber:#E6A817;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--paper); color:var(--ink); font-family:'Inter',sans-serif; -webkit-font-smoothing:antialiased; min-height:100vh;}
+  h1,h2,h3,.display{font-family:'Bebas Neue',sans-serif; letter-spacing:0.02em; line-height:0.95; margin:0;}
+  .app{max-width:480px; margin:0 auto; min-height:100vh; background:var(--paper); position:relative; display:flex; flex-direction:column; box-shadow:0 0 60px rgba(0,0,0,0.15);}
+  .topbar{background:var(--ink); color:var(--paper); padding:22px 20px 60px 20px; position:relative; overflow:hidden;}
+  .topbar::after{content:""; position:absolute; right:-40px; top:-40px; width:160px; height:160px; background:var(--magenta); border-radius:50%; opacity:0.9; clip-path: polygon(50% 0%, 63% 38%, 100% 38%, 69% 59%, 82% 100%, 50% 76%, 18% 100%, 31% 59%, 0% 38%, 37% 38%);}
+  .topbar .brand{display:flex; align-items:baseline; gap:8px; position:relative; z-index:2;}
+  .topbar .brand .display{font-size:34px; color:var(--lime);}
+  .topbar .tag{font-size:13px; color:var(--paper); opacity:0.75; margin-top:4px; position:relative; z-index:2;}
+  .sync-pill{position:relative; z-index:2; display:inline-flex; align-items:center; gap:6px; margin-top:10px; font-size:11px; font-weight:700; color:var(--paper); opacity:0.85;}
+  .sync-dot{width:7px; height:7px; border-radius:50%; background:var(--lime); animation:pulse 1.6s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;} 50%{opacity:0.3;}}
+  .role-switch{position:relative; z-index:2; display:flex; gap:0; margin-top:16px; background:rgba(255,255,255,0.08); border-radius:999px; padding:4px; width:fit-content;}
+  .role-switch button{border:none; background:transparent; color:var(--paper); font-family:'Inter',sans-serif; font-weight:600; font-size:13px; padding:8px 16px; border-radius:999px; cursor:pointer; opacity:0.6; transition:0.2s;}
+  .role-switch button.active{background:var(--paper); color:var(--ink); opacity:1;}
+  .sheet{margin-top:-42px; background:var(--paper); border-radius:22px 22px 0 0; position:relative; z-index:3; flex:1; padding:22px 20px 100px 20px;}
+  .view{display:none; animation:fade 0.25s ease;}
+  .view.active{display:block;}
+  @keyframes fade{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
+  .field-row{display:flex; gap:10px; margin-bottom:12px;}
+  select, input[type=text]{flex:1; font-family:'Inter',sans-serif; font-size:14px; padding:13px 14px; border:1.5px solid var(--ink); border-radius:10px; background:var(--white); color:var(--ink); font-weight:600;}
+  .section-label{font-size:12px; font-weight:700; color:var(--indigo); margin:20px 0 10px 0;}
+  .section-sub{font-size:11px; color:#777; margin:-8px 0 12px 0;}
+
+  .usual-chip{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    background:var(--indigo); color:var(--paper); border-radius:12px; padding:12px 14px; margin-bottom:14px; cursor:pointer;
+  }
+  .usual-chip .l{font-size:13px; font-weight:700;}
+  .usual-chip .s{font-size:11px; opacity:0.7;}
+
+  .leave-now{
+    background:var(--lime); border-radius:14px; padding:16px; margin-bottom:16px; display:none;
+  }
+  .leave-now.show{display:block;}
+  .leave-now .lbl{font-size:11px; font-weight:800; letter-spacing:0.02em;}
+  .leave-now .msg{font-family:'Bebas Neue'; font-size:26px; margin-top:2px;}
+  .leave-now .sub{font-size:12px; margin-top:4px;}
+
+  .best-tag{
+    position:absolute; top:-9px; left:14px; background:var(--magenta); color:var(--white);
+    font-size:10px; font-weight:800; padding:3px 10px; border-radius:999px;
+  }
+
+  .ticket{background:var(--white); border:1.5px solid var(--ink); border-radius:14px; padding:16px; margin-bottom:14px; position:relative; display:flex; justify-content:space-between; gap:12px; cursor:pointer; transition:transform 0.15s;}
+  .ticket:active{transform:scale(0.98);}
+  .ticket.recommended{border-color:var(--magenta); border-width:2px;}
+  .ticket .notch{position:absolute; top:50%; width:16px; height:16px; background:var(--paper); border-radius:50%; transform:translateY(-50%);}
+  .ticket .notch.left{left:-9px; border-right:1.5px solid var(--ink);}
+  .ticket .notch.right{right:-9px; border-left:1.5px solid var(--ink);}
+  .ticket-main .sacco{font-weight:800; font-size:15px;}
+  .ticket-main .route{font-size:12px; color:#555; margin-top:2px;}
+  .ticket-main .meta{display:flex; gap:10px; margin-top:10px; font-size:11px; font-weight:700;}
+  .badge{padding:3px 8px; border-radius:6px; background:var(--paper);}
+  .badge.eta{color:var(--indigo);}
+  .badge.seats{color:#0A7A3D;}
+  .badge.seats.low{color:#B8321A;}
+  .ticket-fare{text-align:right; display:flex; flex-direction:column; justify-content:space-between; align-items:flex-end; min-width:70px;}
+  .ticket-fare .price{font-family:'Bebas Neue',sans-serif; font-size:26px;}
+  .ticket-fare .conf{font-size:10px; color:#0A7A3D; font-weight:700;}
+
+  .simplify-banner{
+    background:var(--white); border:1.5px dashed var(--indigo); border-radius:12px; padding:14px; margin-bottom:14px; font-size:13px; display:none;
+  }
+  .simplify-banner.show{display:block;}
+  .simplify-banner .t{font-weight:800; margin-bottom:2px;}
+
+  .crowd-note{font-size:11px; color:#B8321A; font-weight:700; margin:-6px 0 14px 0; display:flex; gap:5px; align-items:center;}
+
+  .btn{display:block; width:100%; text-align:center; padding:15px; border-radius:12px; border:none; font-family:'Inter',sans-serif; font-weight:700; font-size:15px; cursor:pointer;}
+  .btn-primary{background:var(--magenta); color:var(--white);}
+  .btn-dark{background:var(--ink); color:var(--paper);}
+  .btn-ghost{background:transparent; color:var(--ink); border:1.5px solid var(--ink);}
+  .btn-sm{padding:11px; font-size:13px;}
+  .btn[disabled]{opacity:0.5; cursor:not-allowed;}
+
+  .overlay{position:absolute; inset:0; background:rgba(18,20,28,0.55); z-index:10; display:none; align-items:flex-end;}
+  .overlay.active{display:flex;}
+  .modal{background:var(--paper); width:100%; border-radius:20px 20px 0 0; padding:24px 20px 30px 20px; max-height:88%; overflow-y:auto;}
+  .modal .close{text-align:right; font-size:13px; font-weight:700; color:var(--indigo); cursor:pointer; margin-bottom:6px;}
+  .status-line{background:var(--white); border:1.5px solid var(--line); border-radius:12px; padding:12px 14px; font-size:13px; margin-bottom:10px; display:flex; gap:10px; align-items:flex-start;}
+  .status-line .dot{width:8px; height:8px; border-radius:50%; background:var(--magenta); margin-top:5px; flex-shrink:0;}
+  .quick-reacts{display:flex; gap:8px; flex-wrap:wrap; margin:14px 0;}
+  .quick-reacts button{font-family:'Inter',sans-serif; font-size:12px; font-weight:700; padding:8px 12px; border-radius:999px; border:1.5px solid var(--ink); background:var(--white); cursor:pointer;}
+  .quick-reacts button.sent{background:var(--lime); border-color:var(--lime);}
+
+  .mini-actions{display:flex; gap:8px; margin-top:14px;}
+  .mini-actions button{flex:1;}
+
+  .survey-card{background:var(--white); border:1.5px solid var(--ink); border-radius:14px; padding:18px; text-align:center;}
+  .survey-card .q{font-size:15px; font-weight:700; margin-bottom:14px;}
+  .mood-row{display:flex; gap:10px; justify-content:center; margin-bottom:6px;}
+  .mood-row button{font-size:26px; background:var(--paper); border:1.5px solid var(--ink); border-radius:12px; width:56px; height:56px; cursor:pointer;}
+  .mood-row button.picked{background:var(--lime);}
+
+  .sos-fab{position:fixed; bottom:90px; right:calc(50% - 220px); z-index:5; background:#B8321A; color:white; width:52px; height:52px; border-radius:50%; border:none; font-weight:800; font-size:11px; box-shadow:0 6px 16px rgba(184,50,26,0.4); cursor:pointer;}
+  @media (max-width:520px){.sos-fab{right:20px;}}
+
+  .stat-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:18px;}
+  .stat-box{background:var(--white); border:1.5px solid var(--ink); border-radius:12px; padding:14px;}
+  .stat-box .num{font-family:'Bebas Neue',sans-serif; font-size:32px;}
+  .stat-box .lbl{font-size:11px; font-weight:700; color:#555;}
+  .passenger-row{display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid var(--line);}
+  .passenger-row .name{font-weight:700; font-size:14px;}
+  .passenger-row .id{font-size:11px; color:#777;}
+  .verify-btn{font-size:11px; font-weight:800; padding:7px 12px; border-radius:8px; border:none; cursor:pointer;}
+  .verify-btn.pending{background:var(--lime); color:var(--ink);}
+  .verify-btn.done{background:var(--ink); color:var(--paper);}
+  .vstatus-row{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:18px;}
+  .vstatus-row button{flex:1; min-width:70px; padding:10px 6px; border-radius:10px; border:1.5px solid var(--ink); background:var(--white); font-size:11px; font-weight:800; cursor:pointer;}
+  .vstatus-row button.active{background:var(--indigo); color:var(--white); border-color:var(--indigo);}
+  .bar-chart{display:flex; align-items:flex-end; gap:6px; height:100px; margin-bottom:6px;}
+  .bar{flex:1; background:var(--indigo); border-radius:4px 4px 0 0; position:relative;}
+  .bar.peak{background:var(--magenta);}
+  .bar-labels{display:flex; gap:6px; font-size:9px; color:#777; margin-bottom:18px;}
+  .bar-labels span{flex:1; text-align:center;}
+  .insight-card{background:var(--white); border:1.5px solid var(--ink); border-radius:12px; padding:14px; margin-bottom:12px; font-size:13px; line-height:1.4;}
+  .insight-card .tag{display:inline-block; font-size:10px; font-weight:800; color:var(--indigo); background:var(--paper); padding:3px 8px; border-radius:6px; margin-bottom:6px;}
+  .mood-summary{display:flex; gap:8px; margin-bottom:12px;}
+  .mood-summary .m{flex:1; background:var(--white); border:1.5px solid var(--ink); border-radius:12px; padding:10px; text-align:center;}
+  .mood-summary .m .e{font-size:20px;}
+  .mood-summary .m .n{font-family:'Bebas Neue'; font-size:20px;}
+  .empty{font-size:13px; color:#777; padding:20px 0; text-align:center;}
+  .tabbar{position:fixed; bottom:0; left:0; right:0; max-width:480px; margin:0 auto; background:var(--ink); display:flex; z-index:6; border-radius:18px 18px 0 0; overflow:hidden;}
+  .tabbar button{flex:1; background:none; border:none; color:rgba(243,239,230,0.5); padding:12px 4px 14px 4px; font-family:'Inter',sans-serif; font-weight:700; font-size:10px; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px;}
+  .tabbar button.active{color:var(--lime);}
+  .tabbar .ic{font-size:18px;}
+  .toast{position:fixed; bottom:100px; left:50%; transform:translateX(-50%) translateY(20px); background:var(--ink); color:var(--paper); padding:12px 20px; border-radius:999px; font-size:13px; font-weight:600; opacity:0; transition:0.3s; z-index:20; pointer-events:none; white-space:nowrap; max-width:88%; text-align:center;}
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+  .name-gate{padding:40px 24px; text-align:center;}
+  .name-gate input{margin-bottom:14px; text-align:center;}
+  .anon-link{font-size:12px; color:var(--indigo); font-weight:700; text-align:center; margin-top:10px; cursor:pointer; text-decoration:underline;}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+
+  <div class="topbar">
+    <div class="brand"><span class="display">matatu.com</span></div>
+    <div class="tag">Nairobi, sorted. Know before you go.</div>
+    <div class="sync-pill"><span class="sync-dot"></span><span id="syncLabel">Live — shared with everyone using this link</span></div>
+    <div class="role-switch" id="roleSwitch">
+      <button class="active" data-role="passenger">Passenger</button>
+      <button data-role="conductor">Conductor</button>
+      <button data-role="intel">Management</button>
+    </div>
+  </div>
+
+  <div class="sheet">
+
+    <div class="view active" id="view-passenger">
+      <div id="nameGate" class="name-gate">
+        <h3 style="font-size:22px; margin-bottom:6px;">Jina lako ni nani?</h3>
+        <div style="font-size:13px; color:#555; margin-bottom:18px;">So the conductor can check you in.</div>
+        <input type="text" id="nameInput" placeholder="e.g. Amina W.">
+        <button class="btn btn-primary" onclick="setName()">Endelea — Continue</button>
+      </div>
+
+      <div id="pass-home" style="display:none;">
+
+        <div class="usual-chip" id="usualChip" style="display:none;" onclick="useUsualRoute()">
+          <div><div class="l">Safari yako ya kawaida</div><div class="s" id="usualChipSub">your usual trip</div></div>
+          <div style="font-size:20px;">↻</div>
+        </div>
+
+        <div class="field-row">
+          <select id="fromSel"><option>Upper Hill</option><option>Westlands</option><option>CBD - Kencom</option><option>Kasarani</option></select>
+          <select id="toSel"><option>Kasarani</option><option>Rongai</option><option>CBD - Archives</option><option>Embakasi</option></select>
+        </div>
+        <button class="btn btn-primary" onclick="searchVehicles()">Niko Ready — Search Matatus</button>
+
+        <div class="crowd-note" id="crowdNote" style="display:none;">⚠ <span id="crowdNoteText"></span></div>
+
+        <div class="leave-now" id="leaveNowBanner">
+          <div class="lbl">PANDA SASA</div>
+          <div class="msg" id="leaveNowMsg">Ondoka sasa</div>
+          <div class="sub" id="leaveNowSub"></div>
+        </div>
+
+        <div class="simplify-banner" id="simplifyBanner">
+          <div class="t">Bado unatafuta? Hii ndio poa zaidi sasa hivi.</div>
+          <div>Still deciding? Here's the single best option right now — everything else is hidden so it's easier to choose.</div>
+        </div>
+
+        <div class="section-label">Available now</div>
+        <div id="vehicleList"></div>
+
+        <div id="miniSurveyZone"></div>
+      </div>
+    </div>
+
+    <div class="view" id="view-conductor">
+      <div class="stat-grid">
+        <div class="stat-box"><div class="num" id="seatsFilled">0</div><div class="lbl">SEATS BOOKED (LIVE)</div></div>
+        <div class="stat-box"><div class="num" id="earnings">KES 0</div><div class="lbl">TODAY'S EARNINGS (LIVE)</div></div>
+      </div>
+      <div class="section-label">Vehicle status</div>
+      <div class="vstatus-row" id="vstatusRow">
+        <button data-s="boarding" class="active">Boarding</button>
+        <button data-s="full">Full</button>
+        <button data-s="delayed">Delayed</button>
+        <button data-s="completed">Done</button>
+      </div>
+      <div class="section-label">Live passenger manifest</div>
+      <div id="manifestList"></div>
+      <button class="btn btn-dark" style="margin-top:16px;" onclick="notifyDelay()">Tuma ujumbe — Notify passengers of a delay</button>
+    </div>
+
+    <div class="view" id="view-intel">
+      <div class="stat-grid">
+        <div class="stat-box"><div class="num" id="totalBookingsStat">0</div><div class="lbl">LIVE BOOKINGS TODAY</div></div>
+        <div class="stat-box"><div class="num" id="revenueStat">KES 0</div><div class="lbl">LIVE REVENUE TODAY</div></div>
+      </div>
+
+      <div class="section-label">How commuters are feeling (live, from mood check-ins)</div>
+      <div class="mood-summary" id="moodSummary"></div>
+
+      <div class="section-label">Demand by hour — Upper Hill → CBD</div>
+      <div class="bar-chart" id="barChart"></div>
+      <div class="bar-labels"><span>6a</span><span>8a</span><span>10a</span><span>12p</span><span>2p</span><span>4p</span><span>6p</span><span>8p</span></div>
+
+      <div class="section-label">Live safety reports</div>
+      <div class="section-sub">Anonymous — no names attached</div>
+      <div id="safetyList"></div>
+
+      <div class="insight-card"><div class="tag">DELAY INTELLIGENCE</div>Ngong Road route is running 12–18 min slower than scheduled most weekdays after 5pm. Recommended departure buffer: +15 min.</div>
+
+      <div class="section-label">Recent live bookings across the fleet</div>
+      <div id="recentBookings"></div>
+    </div>
+
+  </div>
+
+  <button class="sos-fab" onclick="sendSOS()">SOS</button>
+
+  <div class="tabbar">
+    <button class="tab-btn active" data-role="passenger"><span class="ic">🧍</span>Passenger</button>
+    <button class="tab-btn" data-role="conductor"><span class="ic">🚌</span>Conductor</button>
+    <button class="tab-btn" data-role="intel"><span class="ic">📊</span>Management</button>
+  </div>
+
+  <div class="overlay" id="bookingOverlay"><div class="modal" id="bookingModal"></div></div>
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+const vehicles = [
+  {id:"sm24", sacco:"Super Metro 24", route:"Upper Hill → CBD → Kasarani", eta:6, fare:80, conf:91},
+  {id:"ch105", sacco:"Citi Hoppa 105", route:"Upper Hill → Ngong Rd → Kasarani", eta:11, fare:70, conf:84},
+  {id:"ft1", sacco:"Forward Travellers", route:"Upper Hill → Thika Rd → Kasarani", eta:4, fare:100, conf:96},
+];
+
+let passengerName = "";
+let bookings = [];
+let surveys = [];
+let safetyReports = [];
+let searchCount = 0;
+let activeBookingVehicle = null;
+
+/* ---------- storage helpers ---------- */
+async function loadShared(key){
+  try{
+    const res = await window.storage.get(key, true);
+    return res && res.value ? JSON.parse(res.value) : [];
+  }catch(e){ return []; }
+}
+async function saveShared(key, val){
+  try{ await window.storage.set(key, JSON.stringify(val), true); }
+  catch(e){ toast("Couldn't sync — check connection"); }
+}
+async function loadBookings(){ bookings = await loadShared('matwana:bookings'); }
+async function saveBookings(){ await saveShared('matwana:bookings', bookings); }
+async function loadSurveys(){ surveys = await loadShared('matwana:surveys'); }
+async function saveSurveys(){ await saveShared('matwana:surveys', surveys); }
+async function loadSafety(){ safetyReports = await loadShared('matwana:safety'); }
+async function saveSafety(){ await saveShared('matwana:safety', safetyReports); }
+
+async function loadUsualRoute(){
+  try{
+    const res = await window.storage.get('matwana:usual_route', false);
+    return res && res.value ? JSON.parse(res.value) : null;
+  }catch(e){ return null; }
+}
+async function saveUsualRoute(from,to){
+  try{ await window.storage.set('matwana:usual_route', JSON.stringify({from,to}), false); }catch(e){}
+}
+
+/* ---------- name gate ---------- */
+async function setName(){
+  const v = document.getElementById('nameInput').value.trim();
+  if(!v){ toast("Andika jina lako kwanza — type your name first"); return; }
+  passengerName = v;
+  document.getElementById('nameGate').style.display = 'none';
+  document.getElementById('pass-home').style.display = 'block';
+  const usual = await loadUsualRoute();
+  if(usual){
+    document.getElementById('usualChip').style.display = 'flex';
+    document.getElementById('usualChipSub').textContent = usual.from + " → " + usual.to;
+  }
+  applyCrowdNote();
+  renderVehicles();
+}
+
+function useUsualRoute(){
+  loadUsualRoute().then(u=>{
+    if(!u) return;
+    document.getElementById('fromSel').value = u.from;
+    document.getElementById('toSel').value = u.to;
+    searchVehicles();
+  });
+}
+
+/* ---------- crowd awareness (time-of-day illustrative) ---------- */
+function applyCrowdNote(){
+  const hour = new Date().getHours();
+  const note = document.getElementById('crowdNote');
+  const text = document.getElementById('crowdNoteText');
+  if(hour >= 17 && hour <= 19){
+    note.style.display = 'flex';
+    text.textContent = "Kencom itakuwa na msongamano sasa (~5–7pm). Fikiria stage nyingine kama uko na haraka.";
+  } else {
+    note.style.display = 'none';
+  }
+}
+
+/* ---------- leave-now banner ---------- */
+function updateLeaveNow(bestEta){
+  const banner = document.getElementById('leaveNowBanner');
+  if(bestEta === null){ banner.classList.remove('show'); return; }
+  banner.classList.add('show');
+  const leaveIn = Math.max(bestEta - 3, 0);
+  if(leaveIn <= 1){
+    document.getElementById('leaveNowMsg').textContent = "Ondoka sasa hivi!";
+    document.getElementById('leaveNowSub').textContent = "Gari iko karibu sana — leave the office right now.";
+  } else {
+    document.getElementById('leaveNowMsg').textContent = "Ondoka baada ya dakika " + leaveIn;
+    document.getElementById('leaveNowSub').textContent = "Leave in about " + leaveIn + " min — no need to wait at the stage before that.";
+  }
+}
+
+/* ---------- vehicles + decision simplification ---------- */
+function seatsBookedFor(vehicleId){ return bookings.filter(b => b.vehicleId === vehicleId).length; }
+
+function scoreVehicle(v){
+  const seatsLeft = Math.max(14 - seatsBookedFor(v.id), 0);
+  // simple weighted score: confidence high, eta low, fare low, seats available
+  return (v.conf*0.5) - (v.eta*1.2) - (v.fare*0.15) + (seatsLeft>0?10:-20);
+}
+
+function renderVehicles(){
+  const list = document.getElementById('vehicleList');
+  const simplify = searchCount >= 3;
+  document.getElementById('simplifyBanner').classList.toggle('show', simplify);
+
+  const ranked = vehicles.slice().sort((a,b)=>scoreVehicle(b)-scoreVehicle(a));
+  const toShow = simplify ? ranked.slice(0,1) : ranked;
+  const bestId = ranked[0].id;
+
+  updateLeaveNow(ranked[0].eta);
+
+  list.innerHTML = toShow.map(v => {
+    const taken = seatsBookedFor(v.id);
+    const seatsLeft = Math.max(14 - taken, 0);
+    const isBest = v.id === bestId;
+    return `
+    <div class="ticket ${isBest?'recommended':''}" onclick="openBooking('${v.id}')">
+      ${isBest?'<div class="best-tag">Poa Zaidi · Best pick</div>':''}
+      <span class="notch left"></span><span class="notch right"></span>
+      <div class="ticket-main">
+        <div class="sacco">${v.sacco}</div>
+        <div class="route">${v.route}</div>
+        <div class="meta">
+          <span class="badge eta">${v.eta} min away</span>
+          <span class="badge seats ${seatsLeft<=2?'low':''}">${seatsLeft} seats left</span>
+        </div>
+      </div>
+      <div class="ticket-fare">
+        <div class="price">${v.fare}</div>
+        <div class="conf">${v.conf}% confidence</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function searchVehicles(){
+  await loadBookings();
+  searchCount++;
+  applyCrowdNote();
+  renderVehicles();
+  if(searchCount === 3){
+    toast("Umetafuta mara kadhaa — tumekurahisishia. Simplified to one recommendation.");
+  } else {
+    toast("Showing live vehicles for " + document.getElementById('fromSel').value + " → " + document.getElementById('toSel').value);
+  }
+}
+
+/* ---------- booking modal ---------- */
+function openBooking(vehicleId){
+  activeBookingVehicle = vehicleId;
+  const v = vehicles.find(x => x.id === vehicleId);
+  document.getElementById('bookingModal').innerHTML = `
+    <div class="close" onclick="closeModal()">Close ✕</div>
+    <h2 style="font-size:24px; margin-bottom:4px;">${v.sacco}</h2>
+    <div style="font-size:13px; color:#555; margin-bottom:16px;">${v.route}</div>
+    <div class="status-line"><div class="dot"></div><div>Gari iko dakika ${v.eta} — vehicle is ${v.eta} min out, traffic is light right now. Confidence in this estimate: ${v.conf}%.</div></div>
+    <div class="section-label">Quick reply to conductor</div>
+    <div class="quick-reacts">
+      <button onclick="this.classList.toggle('sent')">Niko stage</button>
+      <button onclick="this.classList.toggle('sent')">Niko njiani</button>
+      <button onclick="this.classList.toggle('sent')">Subiri kidogo</button>
+    </div>
+    <div class="section-label">Fare</div>
+    <div style="font-family:'Bebas Neue'; font-size:30px; margin-bottom:14px;">KES ${v.fare}</div>
+    <button class="btn btn-primary" onclick="confirmBooking('${v.id}')">Chukua Kiti — Confirm & Reserve</button>
+    <div class="anon-link" onclick="openSafetyReport()">Ripoti mahali si salama — Report an unsafe spot</div>
+  `;
+  document.getElementById('bookingOverlay').classList.add('active');
+}
+
+async function confirmBooking(vehicleId){
+  const v = vehicles.find(x => x.id === vehicleId);
+  const bookingId = "MTW-" + Math.floor(1000+Math.random()*9000);
+  await loadBookings();
+  bookings.push({bookingId, name: passengerName, vehicleId, sacco: v.sacco, route: v.route, fare: v.fare, verified:false, missed:false, ts: Date.now()});
+  await saveBookings();
+  await saveUsualRoute(document.getElementById('fromSel').value, document.getElementById('toSel').value);
+  searchCount = 0;
+  renderVehicles();
+  document.getElementById('bookingModal').innerHTML = `
+    <div class="close" onclick="closeModal()">Close ✕</div>
+    <h2 style="font-size:26px;">Umepata kiti ✓ — Booked</h2>
+    <div style="font-size:13px; color:#555; margin-bottom:18px;">This booking is now live in the conductor's manifest.</div>
+    <div style="background:var(--white); border:1.5px dashed var(--ink); border-radius:14px; padding:20px; text-align:center; margin-bottom:16px;">
+      <div style="font-size:11px; font-weight:700; color:#777;">BOOKING ID</div>
+      <div style="font-family:'Bebas Neue'; font-size:38px; letter-spacing:0.05em;">${bookingId}</div>
+      <div style="font-size:12px; margin-top:8px;">Show this to your conductor when boarding</div>
+    </div>
+    <div class="mini-actions">
+      <button class="btn btn-ghost btn-sm" onclick="handleMissedTrip('${bookingId}')">Nimekosa gari</button>
+      <button class="btn btn-dark btn-sm" onclick="closeModal(); showMicroSurvey();">Sawa — Done</button>
+    </div>
+  `;
+  toast("Ticket saved — synced live");
+}
+
+/* missed-trip recovery: calm next step, not a restart */
+async function handleMissedTrip(bookingId){
+  await loadBookings();
+  const b = bookings.find(x=>x.bookingId===bookingId);
+  if(b){ b.missed = true; await saveBookings(); }
+  const next = vehicles.slice().sort((a,b)=>scoreVehicle(b)-scoreVehicle(a))[0];
+  document.getElementById('bookingModal').innerHTML = `
+    <div class="close" onclick="closeModal()">Close ✕</div>
+    <h2 style="font-size:24px;">Haina shida — no worries</h2>
+    <div style="font-size:13px; color:#555; margin-bottom:16px;">Your seat on that vehicle is released. Here's the next best one — no need to start over.</div>
+    <div class="status-line"><div class="dot"></div><div><strong>${next.sacco}</strong> — ${next.eta} min away, KES ${next.fare}.</div></div>
+    <button class="btn btn-primary" onclick="confirmBooking('${next.id}')">Chukua hii — Book this instead</button>
+  `;
+  renderVehicles();
+}
+
+function closeModal(){ document.getElementById('bookingOverlay').classList.remove('active'); }
+
+/* ---------- anonymous safety report ---------- */
+function openSafetyReport(){
+  const v = vehicles.find(x=>x.id===activeBookingVehicle);
+  document.getElementById('bookingModal').innerHTML = `
+    <div class="close" onclick="closeModal()">Close ✕</div>
+    <h2 style="font-size:22px;">Ripoti — Report</h2>
+    <div style="font-size:13px; color:#555; margin-bottom:14px;">Anonymous. No name is attached to this.</div>
+    <input type="text" id="safetyNote" placeholder="e.g. Poor lighting at drop-off point" style="width:100%; margin-bottom:14px;">
+    <button class="btn btn-primary" onclick="submitSafetyReport('${v?v.route:''}')">Tuma — Submit</button>
+  `;
+}
+async function submitSafetyReport(route){
+  const note = document.getElementById('safetyNote').value.trim();
+  if(!note){ toast("Andika maelezo kidogo — add a short note first"); return; }
+  await loadSafety();
+  safetyReports.push({route, note, ts: Date.now()});
+  await saveSafety();
+  closeModal();
+  toast("Asante! Ripoti yako imepokelewa — thanks, it's anonymous and logged.");
+}
+
+/* ---------- mood check-in / micro-survey ---------- */
+function showMicroSurvey(){
+  document.getElementById('miniSurveyZone').innerHTML = `
+    <div class="section-label">Haraka — one quick thing</div>
+    <div class="survey-card">
+      <div class="q">Vipi safari? — how did that feel?</div>
+      <div class="mood-row">
+        <button onclick="submitMood('😌','calm', this)">😌</button>
+        <button onclick="submitMood('⏱️','rushed', this)">⏱️</button>
+        <button onclick="submitMood('😤','frustrated', this)">😤</button>
+        <button onclick="submitMood('😴','tired', this)">😴</button>
+      </div>
+    </div>
+  `;
+}
+async function submitMood(emoji, label, el){
+  document.querySelectorAll('.mood-row button').forEach(b=>b.classList.remove('picked'));
+  el.classList.add('picked');
+  await loadSurveys();
+  surveys.push({name: passengerName, mood: label, emoji, ts: Date.now()});
+  await saveSurveys();
+  toast("Asante! Maoni yako yanatusaidia — thanks, that helps us improve.");
+}
+
+/* ---------- SOS ---------- */
+function sendSOS(){ toast("SOS imetumwa — your live location was shared with your emergency contact"); }
+
+/* ---------- conductor ---------- */
+async function renderManifest(){
+  await loadBookings();
+  document.getElementById('seatsFilled').textContent = bookings.length;
+  document.getElementById('earnings').textContent = "KES " + bookings.reduce((s,b)=>s+b.fare,0);
+  const list = document.getElementById('manifestList');
+  if(bookings.length === 0){
+    list.innerHTML = '<div class="empty">No passengers booked yet. Bookings made on the Passenger tab — on any phone — will appear here live.</div>';
+    return;
+  }
+  list.innerHTML = bookings.slice().reverse().map((p) => `
+    <div class="passenger-row">
+      <div><div class="name">${p.name || 'Guest'}${p.missed?' (missed — released)':''}</div><div class="id">${p.bookingId} · ${p.sacco}</div></div>
+      <button class="verify-btn ${p.verified?'done':'pending'}" onclick="verifyPassenger('${p.bookingId}')">${p.verified?'Verified ✓':'Verify'}</button>
+    </div>
+  `).join('');
+}
+async function verifyPassenger(bookingId){
+  await loadBookings();
+  const b = bookings.find(x => x.bookingId === bookingId);
+  if(b){ b.verified = true; await saveBookings(); }
+  renderManifest();
+  toast((b ? b.name : 'Passenger') + " checked in");
+}
+function notifyDelay(){ toast("Delay notice sent to all booked passengers"); }
+document.querySelectorAll('.vstatus-row button').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    document.querySelectorAll('.vstatus-row button').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    toast("Vehicle marked as " + b.textContent);
+  });
+});
+
+/* ---------- management / intelligence ---------- */
+async function renderIntel(){
+  await loadBookings(); await loadSurveys(); await loadSafety();
+  document.getElementById('totalBookingsStat').textContent = bookings.length;
+  document.getElementById('revenueStat').textContent = "KES " + bookings.reduce((s,b)=>s+b.fare,0);
+
+  const moodCounts = {calm:0, rushed:0, frustrated:0, tired:0};
+  surveys.forEach(s => { if(moodCounts[s.mood] !== undefined) moodCounts[s.mood]++; });
+  const emojiFor = {calm:'😌', rushed:'⏱️', frustrated:'😤', tired:'😴'};
+  document.getElementById('moodSummary').innerHTML = Object.keys(moodCounts).map(k => `
+    <div class="m"><div class="e">${emojiFor[k]}</div><div class="n">${moodCounts[k]}</div></div>
+  `).join('');
+
+  const safetyList = document.getElementById('safetyList');
+  if(safetyReports.length === 0){
+    safetyList.innerHTML = '<div class="empty">No safety reports yet.</div>';
+  } else {
+    safetyList.innerHTML = safetyReports.slice().reverse().slice(0,6).map(r => `
+      <div class="insight-card"><div class="tag">ANONYMOUS REPORT</div>${r.note}${r.route ? ' — ' + r.route : ''}</div>
+    `).join('');
+  }
+
+  const recent = document.getElementById('recentBookings');
+  recent.innerHTML = bookings.length === 0
+    ? '<div class="empty">No live bookings yet across the fleet.</div>'
+    : bookings.slice().reverse().slice(0,8).map(b => `
+      <div class="passenger-row"><div><div class="name">${b.name || 'Guest'}</div><div class="id">${b.route}</div></div><div class="id">KES ${b.fare}</div></div>
+    `).join('');
+}
+
+function renderBars(){
+  const heights = [15,35,90,60,45,55,95,40];
+  document.getElementById('barChart').innerHTML = heights.map(h=>`<div class="bar ${h>85?'peak':''}" style="height:${h}%;"></div>`).join('');
+}
+
+function switchRole(role){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+role).classList.add('active');
+  document.querySelectorAll('.role-switch button').forEach(b=>b.classList.toggle('active', b.dataset.role===role));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active', b.dataset.role===role));
+  if(role === 'conductor') renderManifest();
+  if(role === 'intel') renderIntel();
+}
+document.querySelectorAll('.role-switch button, .tab-btn').forEach(b=>{
+  b.addEventListener('click', ()=>switchRole(b.dataset.role));
+});
+
+let toastTimer;
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 2600);
+}
+
+renderBars();
+loadBookings();
+setInterval(()=>{
+  const activeView = document.querySelector('.view.active').id;
+  if(activeView === 'view-conductor') renderManifest();
+  if(activeView === 'view-intel') renderIntel();
+}, 4000);
+</script>
+</body>
+</html>
